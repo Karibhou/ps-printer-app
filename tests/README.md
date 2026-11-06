@@ -97,12 +97,14 @@ accept a printer added over IPP and answer Get-Printer-Attributes for it, while
 `/`, `/addppd` and the printer's `/…/device` page answer 404 (as do `/logs` and
 `/logfile.txt`); the same printer and those first three paths answer 200 on an instance with the web interface, so the 404 is the
 removal of the pages and not a wrong URL. The
-entrypoint must refuse with 64 an instance name with nothing usable, `PORT` 0, 65536
-and an overlong number, a state volume, or a directory of its layout, that UID
-65532 cannot write, printing the `podman unshare chown` that fixes it, a malformed
+entrypoint refuses with 64 an instance name with nothing usable, `PORT` 0, 65536
+and an overlong number, a malformed
 `PRINTER_APP_AUTH_SERVICE` or `PRINTER_APP_ADMIN_GROUP`, and an unsupported
 `PRINTER_APP_SERVER_OPTIONS` value (`no-tls`, or `web-log` next to
-`no-web-interface`); it must refuse with 78 any `PRINTER_APP_AUTH_SERVICE` and a
+`no-web-interface`); it refuses with 73 a state volume, a directory of its
+layout, or a symlinked directory that UID 65532 cannot secure, printing the
+`Persistent state is not writable or cannot be secured` message that fixes it;
+and it refuses with 78 any `PRINTER_APP_AUTH_SERVICE` and a
 `PRINTER_APP_ADMIN_GROUP` without one. Discovery
 from another host and USB access are not verified (see
 [docs/state-and-device-isolation.md](../docs/state-and-device-isolation.md)).
@@ -134,6 +136,13 @@ change between snapshots. `just verify` also runs the image-only
 and `PRINTER_APP_SERVER_OPTIONS` validation at the top of
 `files/container-entrypoint.sh` and the refusal matcher on the host, without
 building or running the OCI image. `just validate` runs them.
+
+The first two source the shared startup library through
+`tests/source-printing-base.sh`, which downloads
+`elements/printing/files/entrypoint-common.sh` from fsdk-containers at the
+junction ref pinned in `elements/fsdk-containers.bst`, so they need network
+access. To run them offline, point `PRINTER_APP_ENTRYPOINT_COMMON` at a local
+copy of that file at the same ref.
 
 ## The manifest
 
