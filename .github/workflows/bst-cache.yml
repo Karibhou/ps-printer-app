@@ -24,7 +24,6 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 jobs:
   prerequisites:
@@ -57,6 +56,10 @@ jobs:
 
   refill:
     name: Refill (${{ matrix.arch }})
+    # "Prune older BuildStream caches" runs gh cache delete, which needs actions: write.
+    permissions:
+      contents: read
+      actions: write
     needs: prerequisites
     if: needs.prerequisites.outputs.available == 'true'
     strategy:
