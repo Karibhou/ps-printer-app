@@ -13,9 +13,7 @@ build-depends:
       location: /layer
 variables:
   (@):
-    # Cross-junction includes expand before their own variables are available.
-    # Keep this local copy identical to the recipe at the pinned junction ref.
-    - include/slim-printing.yml
+    - fsdk-containers.bst:include/slim-printing.yml
   app-forbidden-paths: |
     etc/avahi/services/ssh.service
     etc/avahi/services/sftp-ssh.service
