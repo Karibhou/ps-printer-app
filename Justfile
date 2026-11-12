@@ -51,6 +51,7 @@ validate:
     tests/entrypoint-wiring.sh
     tests/entrypoint-refusal-helper.sh
     tests/fsdk-contract-test.sh
+    tests/runtime-parent.sh
     names="$(just bst show --deps all --format '%{name}' oci/ps-printer-app.bst)"
     printf '%s\n' "$names" | tests/fsdk-contract.sh --graph -
 
@@ -66,9 +67,14 @@ fetch:
     done
     exit 1
 
+# Fetch and authenticate the runtime for the pinned junction before building.
+prepare-parent:
+    bash scripts/fetch-runtime-parent.sh
+
 build:
     #!/usr/bin/env bash
     set -euo pipefail
+    just prepare-parent
     just bst build oci/ps-printer-app.bst
     just export
 
@@ -78,7 +84,7 @@ export:
     rm -rf .build-out
     just bst artifact checkout oci/ps-printer-app.bst --directory /src/.build-out
     IMAGE_ID=$(podman pull -q oci:.build-out)
-    rm -rf .build-out
+    # Keep the original OCI layout for release publication; podman may recompress it.
     podman tag "$IMAGE_ID" "{{ image_ref }}"
 
 # Appliance lifecycle, IPP and a job through to a socket sink.

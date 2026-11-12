@@ -7,6 +7,7 @@ on:
       - project.conf
       - elements/**
       - include/**
+      - junction-files/**
       - patches/**
       - files/**
       - Makefile
@@ -91,7 +92,7 @@ jobs:
       - name: Compute BuildStream cache key
         id: bst-key
         env:
-          INPUTS_HASH: ${{ hashFiles('project.conf', 'elements/**', 'include/**', 'patches/**', 'files/**', 'Makefile', 'ps-printer-app.c', 'ps-printer-app.1', 'ps-printer-app.service', 'generic-ps-printer.ppd', 'testpage.ps', 'VERSION') }}
+          INPUTS_HASH: ${{ hashFiles('project.conf', 'elements/**', 'include/**', 'junction-files/**', 'patches/**', 'files/**', 'Makefile', 'ps-printer-app.c', 'ps-printer-app.1', 'ps-printer-app.service', 'generic-ps-printer.ppd', 'testpage.ps', 'VERSION') }}
         run: echo "hash=${INPUTS_HASH}" >> "$GITHUB_OUTPUT"
       - name: Restore BuildStream cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
@@ -104,7 +105,6 @@ jobs:
           restore-keys: |
             bst-v1-${{ matrix.arch }}-${{ steps.bst-key.outputs.hash }}-
       - name: Install cosign
-        continue-on-error: true
         uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
       # Seed printing/base.bst from the signed printing-base-devel bundle
       # (fsdk-containers docs/skills/printing-base.md, rule 4). Never fails
@@ -150,6 +150,8 @@ jobs:
           else
             echo "printing base seeded from ${ARCH}-${KEY}"
           fi
+      - name: Fetch verified runtime parent
+        run: just prepare-parent
       - name: Build image
         run: just bst --config /src/ci/buildstream.conf --network-retries 5 build oci/ps-printer-app.bst
       - name: Measure cache

@@ -10,6 +10,12 @@ sources:
     track: main
     ref: f94d970da1a32817944de5c8c3348acd77fdcb97
 
+  # The producer generates this gitignored include from its FSDK junction
+  # before invoking bst; junction consumers must stage the same value.
+  - kind: local
+    path: junction-files/fsdk-containers/include
+    directory: include
+
 config:
   options:
     arch: '%{arch}'

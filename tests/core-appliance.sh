@@ -117,11 +117,15 @@ podman exec "$name" /usr/bin/bash -c '
   done < /etc/group
   (( passwd_ok && group_ok ))
 ' || fail "the appliance does not run as nonroot 65532:65532"
-test -d "$state_dir/ppd" || fail "state: ppd directory missing"
-test -d "$state_dir/spool" || fail "state: spool directory missing"
-test -d "$state_dir/cups/ssl" || fail "state: cups/ssl directory missing"
-test -s "$state_dir/cups/snmp.conf" || fail "state: cups/snmp.conf not seeded"
-test -s "$state_dir/usb/org.cups.usb-quirks" || fail "state: usb/org.cups.usb-quirks not seeded"
+podman exec "$name" /usr/bin/bash -c '
+  set -e
+  state=/var/lib/ps-printer-app
+  test -d "$state/ppd"
+  test -d "$state/spool"
+  test -d "$state/cups/ssl"
+  test -s "$state/cups/snmp.conf"
+  test -s "$state/usb/org.cups.usb-quirks"
+' || fail "state directories or seeded files missing"
 echo "  ok: web interface answers, nonroot 65532:65532, state seeded"
 
 echo "== IPP printer and a Print-Job through to the socket sink =="

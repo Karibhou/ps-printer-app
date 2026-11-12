@@ -8,6 +8,9 @@ build-depends:
   - filename: printer-app/version.bst
     config:
       location: /metadata
+  - filename: printer-app/runtime-parent.bst
+    config:
+      location: /parent
   - filename: printer-app/core-runtime.bst
     config:
       location: /layer
@@ -64,10 +67,12 @@ config:
       cd "%{install-root}"
       build-oci <<EOF
       mode: oci
-      gzip: disabled
+      gzip: gzip
       images:
         - os: linux
           architecture: "%{go-arch}"
+          parent:
+            image: /parent
           layer: /layer
           config:
             User: '65532:65532'

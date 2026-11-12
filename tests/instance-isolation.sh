@@ -305,6 +305,7 @@ expect_refusal "a state volume with an unwritable ppd/" 'Persistent state is not
 # out of the volume, so a link cannot point the state anywhere the image does
 # not own. The shared base refuses this with 73, not 64.
 new_state_dir
+chmod 0777 "$state_dir"
 ln -s /etc "$state_dir/cups"
 expect_refusal "a symlinked state directory" 'must not be a symlink' \
   -v "$state_dir:/var/lib/ps-printer-app:Z"
