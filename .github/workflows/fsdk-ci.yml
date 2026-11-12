@@ -85,7 +85,7 @@ jobs:
         id: bst-key
         if: env.FULL_BUILD == 'true' && needs.prerequisites.outputs.available == 'true'
         env:
-          INPUTS_HASH: ${{ hashFiles('project.conf', 'elements/**', 'include/**', 'patches/**', 'files/**', 'Makefile', 'ps-printer-app.c', 'ps-printer-app.1', 'ps-printer-app.service', 'generic-ps-printer.ppd', 'testpage.ps', 'VERSION') }}
+          INPUTS_HASH: ${{ hashFiles('project.conf', 'elements/**', 'include/**', 'junction-files/**', 'patches/**', 'files/**', 'Makefile', 'ps-printer-app.c', 'ps-printer-app.1', 'ps-printer-app.service', 'generic-ps-printer.ppd', 'testpage.ps', 'VERSION') }}
         run: echo "hash=${INPUTS_HASH}" >> "$GITHUB_OUTPUT"
       # Restore only: pull_request and merge_group caches are not reusable by
       # other runs, so bst-cache.yml refills the cache from main instead.

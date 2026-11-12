@@ -85,7 +85,10 @@ fsdk-containers' `docs/skills/printing-base.md`.
 - Renovate (`renovate.json`, a `git-refs` custom manager) moves the junction
   `ref:` to the fsdk-containers `main` HEAD and automerges the bump through the
   merge queue once the required `FSDK (x86_64)` and `FSDK (aarch64)` checks pass.
-  The ref is the only line that changes: nothing FSDK-specific is committed.
+  When the producer's pinned FSDK release changes, update
+  `junction-files/fsdk-containers/include/fsdk-version.yml` to match the value
+  its `just bst` wrapper generates from `elements/freedesktop-sdk.bst`. The
+  include is gitignored upstream and must be staged into the junction here.
 
 ## Build interface
 
