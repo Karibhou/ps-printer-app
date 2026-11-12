@@ -1,11 +1,9 @@
 # Native FSDK image validation
 
-`.github/workflows/fsdk-ci.yml` runs on every pull request to `main`, in the
-merge queue, and on manual dispatch. Pull requests only validate the BuildStream
-graph (`just validate`); no image is built. The merge queue and
-`workflow_dispatch` run the full native x86_64 and AArch64 build and verification,
-each with a six-hour limit. A new commit to a pull request cancels that pull
-request's previous run; merge-queue and dispatch runs are not cancelled.
+`.github/workflows/fsdk-ci.yml` builds and verifies the image on every pull
+request to `main`, in the merge queue, and on manual dispatch. Both native
+x86_64 and AArch64 jobs have a six-hour limit. A new commit cancels the
+previous pull-request run; merge-queue and dispatch runs are not cancelled.
 
 Full builds restore BuildStream's local cache (`~/.cache/buildstream/cas`,
 `artifacts`, `source_protos`) from the Actions cache, one entry per arch.
@@ -64,6 +62,12 @@ fsdk-containers' `docs/skills/printing-base.md`.
   Bash, Python and ordinary Python bytecode remain available to the appliance.
   The OCI element includes `fsdk-containers.bst:include/slim-printing.yml`
   from the pinned junction; there is no local copy to keep in sync.
+- `just build` resolves the runtime-layer key from the pinned junction, verifies
+  the published digest against the exact main-branch signing workflow, and
+  stages that same digest as the OCI parent. It requires `cosign` and `skopeo`
+  on the host. The full runtime filesystem remains the child layer input.
+  CI compares the first layer digests for both architectures. The retained
+  `.build-out` layout is published without a container-storage round trip.
 - `just validate` checks the contract itself against the resolved graph:
   `tests/fsdk-contract.sh` fails on a second FSDK junction, a CUPS stack
   element outside the junction (a second CUPS owner), a patch staged by an
@@ -93,13 +97,9 @@ The workflow follows the Ghostscript appliance's build interface:
 - `project.conf` and `elements/oci/ps-printer-app.bst` define the image graph.
 - `Justfile` (or `justfile`) provides `bst`, `validate`, `build`, and `verify`
   recipes; `build` and `verify` must not depend on a `fetch` recipe.
-- `just validate` runs `tests/entrypoint-validation.sh` and
-  `tests/fsdk-contract-test.sh`, then `bst show --deps all
-  oci/ps-printer-app.bst` (pull requests).
-- `just bst --config /src/ci/buildstream.conf --network-retries 5 build
-  oci/ps-printer-app.bst` builds the image, fetching only uncached sources. CI
-  never runs `bst source fetch --deps all`.
-- `just build` exports the complete local OCI image.
+- `just validate` checks the host-only contracts and resolves the graph.
+- `just build` verifies and fetches the parent, builds and exports the OCI image.
+  The cache refill calls `just prepare-parent` before its direct BuildStream build.
 - `just verify` runs full appliance and payload verification, including executable
   `tests/core-appliance.sh`, `tests/core-payload.sh` and
   `tests/instance-isolation.sh`. The payload test must send a real IPP job through

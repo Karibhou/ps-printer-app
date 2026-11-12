@@ -104,7 +104,6 @@ jobs:
           restore-keys: |
             bst-v1-${{ matrix.arch }}-${{ steps.bst-key.outputs.hash }}-
       - name: Install cosign
-        continue-on-error: true
         uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
       # Seed printing/base.bst from the signed printing-base-devel bundle
       # (fsdk-containers docs/skills/printing-base.md, rule 4). Never fails
@@ -150,6 +149,8 @@ jobs:
           else
             echo "printing base seeded from ${ARCH}-${KEY}"
           fi
+      - name: Fetch verified runtime parent
+        run: just prepare-parent
       - name: Build image
         run: just bst --config /src/ci/buildstream.conf --network-retries 5 build oci/ps-printer-app.bst
       - name: Measure cache
